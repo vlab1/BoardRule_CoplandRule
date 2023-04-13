@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Voter {
+    id          Int         @id @default(autoincrement())
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    name        String      @unique
+    votes       Vote[]
+}
+
+model Vote {
+    candidateId Int         
+    voterId     Int 
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    place       Int         
+    voter       Voter       @relation(fields: [voterId], references: [id], onDelete: Cascade)
+    candidate   Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+    @@id([candidateId, voterId])
+    @@unique([candidateId, voterId, place], name: "UniqueCandidateVoterPlace")
+}
+
+model Candidate {
+    id          Int         @id @default(autoincrement())
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    name        String      @unique
+    description String?
+    votes       Vote[]
+}
