@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const create = Joi.object({
     name: Joi.string().required(),
-    description: Joi.string(),
+    description: Joi.string().allow(null),
 });
 
 const update = Joi.object({
@@ -28,7 +28,7 @@ const generate = Joi.object({
 const createMany = Joi.object({
     candidates: Joi.array().items({
         name: Joi.string().required(),
-        description: Joi.string(),
+        description: Joi.string().allow(null),
     })
 });
 
