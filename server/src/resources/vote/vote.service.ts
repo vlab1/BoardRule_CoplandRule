@@ -103,30 +103,45 @@ class VoteService {
         }
     }
 
-    public async generate(): Promise<Number | Error> {
+    public async generate(): Promise<number | Error> {
         try {
+            function generateRandomNumber(
+                min: number,
+                max: number,
+                usedNumbers: number[]
+            ): number {
+                const randomNumber =
+                    Math.floor(Math.random() * (max - min + 1)) + min;
+                if (usedNumbers.includes(randomNumber)) {
+                    return generateRandomNumber(min, max, usedNumbers);
+                }
+                usedNumbers.push(randomNumber);
+                return randomNumber;
+            }
+
             await this.vote.deleteMany({});
             const voters = await this.voter.findMany({});
             const candidates = await this.candidate.findMany({});
             const input = [];
             for (let i = 0; i < voters.length; i++) {
-                let randomNumber = generateRandomNumber(1, candidates.length);
+                const usedNumbers = [] as Array<number>;
                 for (let j = 0; j < candidates.length; j++) {
+                    const randomNumber = generateRandomNumber(
+                        1,
+                        candidates.length,
+                        usedNumbers
+                    );
                     input.push({
                         place: randomNumber,
                         candidateId: candidates[j].id,
                         voterId: voters[i].id,
                     });
-                    randomNumber += 1;
-                    if (randomNumber > candidates.length) {
-                        randomNumber = 1;
-                    }
                 }
             }
+            console.log(input)
             const votes = await this.vote.createMany({
                 data: input,
             });
-
             return votes.count;
         } catch (error: any) {
             throw new Error(error.message);
@@ -169,16 +184,19 @@ class VoteService {
 
                 groupedVoters[voteKey].push(voter);
             });
+
             const votersVoted = [] as Array<Array<string>>;
             const votersVotedCount = [] as Array<number>;
             for (let key in groupedVoters) {
                 votersVoted.push(key.split(','));
                 votersVotedCount.push(groupedVoters[key].length);
             }
+
             const boardRuleCounting: Record<string, number> = {};
             const boardRuleCountingSteps: Record<string, string> = {};
             const boardRuleSolve: Record<string, number> = {};
-            const maxPoints = votersVotedCount.length - 1;
+            const maxPoints = votersVoted[0].length - 1;
+
             for (let i = 0; i < votersVoted.length; i++) {
                 let points = maxPoints;
                 for (let j = 0; j < votersVoted[i].length; j++) {
@@ -255,6 +273,7 @@ class VoteService {
 
             const candidates = [...new Set(votersVoted.flat())];
             const coplandRuleSteps: Record<string, Array<string>> = {};
+
             for (let i = 0; i < candidates.length; i++) {
                 const candidate = candidates[i];
                 for (let j = 0; j < votersVoted.length; j++) {
@@ -283,6 +302,7 @@ class VoteService {
                     }
                 }
             }
+
             function transformData(
                 data: Record<string, string[]>
             ): Record<string, Array<number>> {
@@ -321,6 +341,7 @@ class VoteService {
                 return dataOpponent;
             }
             let transformCoplandRuleSteps = transformData(coplandRuleSteps);
+
             for (const firstItem in transformCoplandRuleSteps) {
                 const [opponent01, opponent02] = firstItem.split(' & ');
                 for (const secondItem in transformCoplandRuleSteps) {
@@ -357,7 +378,7 @@ class VoteService {
                 } else if (
                     transformCoplandRuleSteps[item][0] <
                     transformCoplandRuleSteps[item][1]
-                )  {
+                ) {
                     coplandRuleCountingSteps.push(
                         `${opponent1} < ${opponent2} = ${transformCoplandRuleSteps[item][0]} : ${transformCoplandRuleSteps[item][1]}`
                     );
@@ -415,7 +436,7 @@ class VoteService {
                 votersVotedCount.push(groupedVoters[key].length);
             }
             const votersVotedTable = [] as Array<Array<string>>;
-            for (let i = 0; i < votersVoted.length; i++) {
+            for (let i = 0; i < votersVoted[0].length; i++) {
                 const temp = [] as Array<string>;
                 for (let j = 0; j < votersVoted.length; j++) {
                     temp.push(votersVoted[j][i]);
@@ -472,7 +493,7 @@ class VoteService {
                 votersVotedCount.push(groupedVoters[key].length);
             }
             const votersVotedTable = [] as Array<Array<string>>;
-            for (let i = 0; i < votersVoted.length; i++) {
+            for (let i = 0; i < votersVoted[0].length; i++) {
                 const temp = [] as Array<string>;
                 for (let j = 0; j < votersVoted.length; j++) {
                     temp.push(votersVoted[j][i]);
