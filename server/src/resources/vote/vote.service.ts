@@ -138,7 +138,6 @@ class VoteService {
                     });
                 }
             }
-            console.log(input)
             const votes = await this.vote.createMany({
                 data: input,
             });
