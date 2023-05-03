@@ -103,7 +103,23 @@ const Main = () => {
       throw new Error("Error");
     }
   };
-
+  const handleDestroyVoters = async () => { 
+    try { 
+      await request("/api/voter/destroy", "DELETE"); 
+      setVisibility(false); 
+    } catch (e) { 
+      throw new Error("Error"); 
+    } 
+  }; 
+ 
+  const handleDestroyCandidates = async () => { 
+    try { 
+      await request("/api/candidate/destroy", "DELETE"); 
+      setVisibility(false); 
+    } catch (e) { 
+      throw new Error("Error"); 
+    } 
+  };
   return (
     <div>
       <div className="menu">
@@ -143,6 +159,23 @@ const Main = () => {
           >
             generate candidates
           </button>
+        </div>
+        <div className="buttons"> 
+          <button 
+            disabled={loading} 
+            className="action-button" 
+            onClick={handleDestroyVoters} 
+          > 
+            Destroy voters 
+          </button> 
+ 
+          <button 
+            disabled={loading} 
+            className="action-button" 
+            onClick={handleDestroyCandidates} 
+          > 
+            Destroy candidates 
+          </button> 
         </div>
         <div className="buttons">
           <button

@@ -73,28 +73,33 @@ const EditVote = () => {
       const voter1 = await request(`/api/voter/find?name=${name}`).then(
         async (res) => {
           if (res.data.length > 0) {
-            await request(`/api/voter/delete?id=${res.data[0].id}`, "DELETE")
-          } 
-            await request("/api/voter/create", "POST", { name }).then(
-              async (res) => {
-                setVoter(res.data);
-                for (let i = 0; i < places.length; i++) {
-                  createMany.push({
-                    candidateId: candidates[i].id,
-                    voterId: res.data.id,
-                    place: places[i],
-                  });
-                }
-                console.log(createMany);
-                await request("/api/vote/create-many", "POST", {votes: createMany}).then((res) => {
-                  alert("You voted");
-                }).catch(async () => {
-                  alert("Error");
-                  await request("/api/voter/delete", "DELETE", {id: res.data.id});
+            await request(`/api/voter/delete?id=${res.data[0].id}`, "DELETE");
+          }
+          await request("/api/voter/create", "POST", { name }).then(
+            async (res) => {
+              setVoter(res.data);
+              for (let i = 0; i < places.length; i++) {
+                createMany.push({
+                  candidateId: candidates[i].id,
+                  voterId: res.data.id,
+                  place: places[i],
                 });
               }
-            );
-          
+              console.log(createMany);
+              await request("/api/vote/create-many", "POST", {
+                votes: createMany,
+              })
+                .then((res) => {
+                  alert("You voted");
+                })
+                .catch(async () => {
+                  alert("Error");
+                  await request("/api/voter/delete", "DELETE", {
+                    id: res.data.id,
+                  });
+                });
+            }
+          );
         }
       );
     } catch (e) {
@@ -106,12 +111,12 @@ const EditVote = () => {
     try {
       const voter = await request(`/api/voter/find?name=${name}`);
       if (!voter || voter.data.length <= 0) {
-        alert("You didn't vote")
-      }     
-      const voterId= voter.data[0].id;
+        alert("You didn't vote");
+      }
+      const voterId = voter.data[0].id;
       const vote = await request(`/api/vote/find?voterId=${voterId}`);
       if (!vote || vote.data.length <= 0) {
-        alert("You didn't vote")
+        alert("You didn't vote");
       }
       const array = vote.data;
       await request("/api/candidate/get").then((res) => {
@@ -130,6 +135,30 @@ const EditVote = () => {
     }
   };
 
+  const handleDeleteVote = async () => {
+    try {
+       await request(`/api/voter/find?name=${name}`).then(
+        async (res) => {
+          if (res.data.length > 0) {
+            await request(`/api/voter/delete?id=${res.data[0].id}`, "DELETE");
+            alert("Your vote has been removed");
+            setCandidatesTable((prevState) => {
+              prevState[1][2] = "";
+              prevState[2][2] = "";
+              prevState[3][2] = "";
+              return prevState;
+            });
+          } else {
+            alert("You didn't vote");
+          }
+        }
+      );
+
+      setIsLoading(false);
+    } catch (e) {
+      throw new Error("Error");
+    }
+  };
 
   return (
     !isLoading && (
@@ -141,12 +170,12 @@ const EditVote = () => {
               onChange={handleNameChange}
               placeholder="Voter's name"
             ></input>
-             <button
+            <button
               disabled={loading}
               onClick={handleGetVote}
               className="action-button"
             >
-              get
+              get my vote
             </button>
           </div>
         </div>
@@ -191,7 +220,14 @@ const EditVote = () => {
               onClick={handleVote}
               className="action-button"
             >
-              vote
+              Edit my vote
+            </button>
+            <button
+              disabled={loading}
+              onClick={handleDeleteVote}
+              className="action-button"
+            >
+              delete my vote
             </button>
           </div>
         </div>
