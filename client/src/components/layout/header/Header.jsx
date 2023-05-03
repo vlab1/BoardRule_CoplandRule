@@ -12,6 +12,7 @@ const Header = () => {
         <Link to="/main" style={{ textDecoration: 'none', color: "black" }} >Main</Link>
         <Link to="/candidates" style={{ textDecoration: 'none', color: "black"  }}>Candidates</Link>
         <Link to="/votes" style={{ textDecoration: 'none', color: "black"  }}>Votes</Link>
+        <Link to="/editvote" style={{ textDecoration: 'none', color: "black" }} >EditVote</Link>
       </nav>
       <div class="bar-icon"><i class="fa-solid fa-bars"></i></div>
       <div class="overlay"></div>
